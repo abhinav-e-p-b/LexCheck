@@ -100,7 +100,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _FeatureCard(
+              const _FeatureCard(
                 icon: Icons.shield_outlined,
                 tag: 'v1.0.42',
                 title: 'ZERO LOGS',
@@ -109,7 +109,7 @@ class WelcomeScreen extends StatelessWidget {
                     'between you and the machine.',
               ),
               const SizedBox(height: 16),
-              _FeatureCard(
+              const _FeatureCard(
                 icon: Icons.translate,
                 tag: 'Local Ready',
                 title: 'MULTI-DIALECT',
@@ -118,7 +118,7 @@ class WelcomeScreen extends StatelessWidget {
                     'legal accessibility.',
               ),
               const SizedBox(height: 16),
-              _FeatureCard(
+              const _FeatureCard(
                 icon: Icons.bolt,
                 tag: 'Realtime',
                 title: 'INSTANT ANALYSIS',

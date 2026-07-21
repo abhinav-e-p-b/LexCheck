@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
+import '../../core/data/models.dart';
+import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_button.dart';
@@ -9,11 +11,11 @@ import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/labels.dart';
 import '../../core/widgets/ring_gauge.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -39,12 +41,15 @@ class HomeScreen extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // LIGHT THEME BODY (Image 5)
 // ---------------------------------------------------------------------------
-class _LightHomeBody extends StatelessWidget {
+class _LightHomeBody extends ConsumerWidget {
   const _LightHomeBody();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final style = context.appStyle;
+    final trendingRisks = ref.watch(trendingRisksProvider);
+    final recentDocs = ref.watch(recentDocumentsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -116,7 +121,17 @@ class _LightHomeBody extends StatelessWidget {
                 label: 'UPLOAD DOCUMENT',
                 icon: Icons.file_upload_outlined,
                 dense: true,
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(recentDocumentsProvider.notifier).addDocument(
+                    const RecentDocument('Uploaded_Draft_V1.pdf', 'Processed - just now')
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Document uploaded successfully.'),
+                      backgroundColor: style.accentColor,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -141,7 +156,7 @@ class _LightHomeBody extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        for (final risk in MockData.trendingRisks) ...[
+        for (final risk in trendingRisks) ...[
           _RiskCard(risk: risk),
           const SizedBox(height: 14),
         ],
@@ -226,9 +241,9 @@ class _LightHomeBody extends StatelessWidget {
           padding: EdgeInsets.zero,
           child: Column(
             children: [
-              for (var i = 0; i < MockData.recentDocuments.length; i++) ...[
-                _RecentDocTile(name: MockData.recentDocuments[i].name),
-                if (i != MockData.recentDocuments.length - 1)
+              for (var i = 0; i < recentDocs.length; i++) ...[
+                _RecentDocTile(name: recentDocs[i].name),
+                if (i != recentDocs.length - 1)
                   Divider(height: 1, color: style.borderColor.withValues(alpha: 0.3)),
               ],
             ],
@@ -325,12 +340,15 @@ class _RecentDocTile extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // DARK THEME BODY (Image 13)
 // ---------------------------------------------------------------------------
-class _DarkHomeBody extends StatelessWidget {
+class _DarkHomeBody extends ConsumerWidget {
   const _DarkHomeBody();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final style = context.appStyle;
+    final recentDocs = ref.watch(recentDocumentsProvider);
+    final highRisks = ref.watch(highRiskAlertsDarkProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -353,10 +371,10 @@ class _DarkHomeBody extends StatelessWidget {
               style: TextStyle(fontSize: 11, color: style.inkMutedColor)),
         ),
         const SizedBox(height: 12),
-        Row(
+        const Row(
           children: [
             Expanded(child: _MetaBox(label: 'LATENCY: 12ms')),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(child: _MetaBox(label: 'STATUS: OPTIMAL')),
           ],
         ),
@@ -380,9 +398,9 @@ class _DarkHomeBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              _MetricBar(label: 'COMPLIANCE', value: '94/100', percent: 0.94),
+              const _MetricBar(label: 'COMPLIANCE', value: '94/100', percent: 0.94),
               const SizedBox(height: 10),
-              _MetricBar(
+              const _MetricBar(
                   label: 'LIABILITY GAP',
                   value: '12%',
                   percent: 0.12,
@@ -399,9 +417,8 @@ class _DarkHomeBody extends StatelessWidget {
                   style: TextStyle(
                       fontWeight: FontWeight.w800, color: style.inkColor)),
               const SizedBox(height: 10),
-              _DarkDocRow(name: 'Service_Agreement_V4.pdf', status: 'PROCESSED - 2m ago'),
-              _DarkDocRow(name: 'NDA_Partner_Final.docx', status: 'FLAGGED - 1h ago'),
-              _DarkDocRow(name: 'Vendor_Policy_2024.pdf', status: 'ARCHIVED - 3h ago'),
+              for (final doc in recentDocs.take(3))
+                _DarkDocRow(name: doc.name, status: doc.status.toUpperCase()),
             ],
           ),
         ),
@@ -430,7 +447,7 @@ class _DarkHomeBody extends StatelessWidget {
                     Text('DRAG & DROP CONTRACTS HERE',
                         style: TextStyle(color: style.inkMutedColor)),
                     const SizedBox(height: 4),
-                    MutedCaption('SUPPORTED: PDF, DOCX, TXT (MAX 50MB)'),
+                    const MutedCaption('SUPPORTED: PDF, DOCX, TXT (MAX 50MB)'),
                   ],
                 ),
               ),
@@ -439,7 +456,17 @@ class _DarkHomeBody extends StatelessWidget {
                 label: 'UPLOAD MANUALLY',
                 icon: Icons.file_upload_outlined,
                 dense: true,
-                onPressed: () {},
+                onPressed: () {
+                  ref.read(recentDocumentsProvider.notifier).addDocument(
+                    const RecentDocument('New_Contract_Final.docx', 'SCANNING...')
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Scan initialized...'),
+                      backgroundColor: style.accentColor,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -483,7 +510,7 @@ class _DarkHomeBody extends StatelessWidget {
                 fontSize: 12,
                 color: style.accentColor)),
         const SizedBox(height: 10),
-        for (final risk in MockData.highRiskAlertsDark) ...[
+        for (final risk in highRisks) ...[
           _DarkAlertCard(risk: risk),
           const SizedBox(height: 12),
         ],

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
+import '../../core/data/models.dart';
+import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_card.dart';
@@ -8,14 +10,14 @@ import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/labels.dart';
 import '../../core/widgets/semi_dial_gauge.dart';
 
-class LexChatScreen extends StatefulWidget {
+class LexChatScreen extends ConsumerStatefulWidget {
   const LexChatScreen({super.key});
 
   @override
-  State<LexChatScreen> createState() => _LexChatScreenState();
+  ConsumerState<LexChatScreen> createState() => _LexChatScreenState();
 }
 
-class _LexChatScreenState extends State<LexChatScreen> {
+class _LexChatScreenState extends ConsumerState<LexChatScreen> {
   final _controller = TextEditingController();
 
   @override
@@ -24,10 +26,27 @@ class _LexChatScreenState extends State<LexChatScreen> {
     super.dispose();
   }
 
+  void _sendMessage() {
+    final text = _controller.text.trim();
+    if (text.isEmpty) return;
+    _controller.clear();
+
+    ref.read(chatThreadProvider.notifier).addMessage(ChatMessage(fromBot: false, text: text));
+    
+    // Mock bot reply
+    ref.read(chatThreadProvider.notifier).addMessage(
+      const ChatMessage(
+        fromBot: true,
+        text: 'Acknowledged. Your query has been logged and marked for processing.',
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final style = context.appStyle;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final messages = ref.watch(chatThreadProvider);
 
     return Scaffold(
       appBar: const AppTopBar(),
@@ -115,9 +134,9 @@ class _LexChatScreenState extends State<LexChatScreen> {
                               ),
                             ),
                             const SizedBox(height: 12),
-                            Wrap(
+                            const Wrap(
                               spacing: 8,
-                              children: const [
+                              children: [
                                 _HashTag('#RISK_MOD_4'),
                                 _HashTag('#PROTOCOL_0_9'),
                                 _HashTag('#LEGAL_GREY'),
@@ -139,7 +158,7 @@ class _LexChatScreenState extends State<LexChatScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 10),
-                                    decoration: BoxDecoration(
+                                    decoration: const BoxDecoration(
                                         color: AppColors.lightHighRiskBg),
                                     child: const Center(
                                       child: Text('HIGH RISK',
@@ -176,7 +195,7 @@ class _LexChatScreenState extends State<LexChatScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    for (final msg in MockData.chatThread) ...[
+                    for (final msg in messages) ...[
                       _ChatBubble(message: msg),
                       const SizedBox(height: 12),
                     ],
@@ -184,7 +203,10 @@ class _LexChatScreenState extends State<LexChatScreen> {
                 ),
               ),
             ),
-            _ChatInputBar(controller: _controller),
+            _ChatInputBar(
+              controller: _controller,
+              onSend: _sendMessage,
+            ),
           ],
         ),
       ),
@@ -290,8 +312,9 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _ChatInputBar extends StatelessWidget {
-  const _ChatInputBar({required this.controller});
+  const _ChatInputBar({required this.controller, required this.onSend});
   final TextEditingController controller;
+  final VoidCallback onSend;
 
   @override
   Widget build(BuildContext context) {
@@ -310,6 +333,7 @@ class _ChatInputBar extends StatelessWidget {
             child: TextField(
               controller: controller,
               style: TextStyle(color: style.inkColor),
+              onSubmitted: (_) => onSend(),
               decoration: InputDecoration(
                 hintText: isDark ? 'Enter legal command' : 'Ask about specific clau',
                 hintStyle: TextStyle(color: style.inkMutedColor, fontSize: 13),
@@ -326,7 +350,7 @@ class _ChatInputBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: () {},
+            onTap: onSend,
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(

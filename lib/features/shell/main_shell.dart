@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/providers/shell_provider.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../home/home_screen.dart';
 import '../lexchat/lexchat_screen.dart';
@@ -8,17 +10,8 @@ import '../resources/resources_screen.dart';
 
 /// Hosts the four bottom-navigation destinations shown across the mocks:
 /// Home, LexChat, Resources, Profile.
-class MainShell extends StatefulWidget {
-  const MainShell({super.key, this.initialIndex = 0});
-
-  final int initialIndex;
-
-  @override
-  State<MainShell> createState() => _MainShellState();
-}
-
-class _MainShellState extends State<MainShell> {
-  late int _index = widget.initialIndex;
+class MainShell extends ConsumerWidget {
+  const MainShell({super.key});
 
   static const _screens = [
     HomeScreen(),
@@ -28,12 +21,14 @@ class _MainShellState extends State<MainShell> {
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final index = ref.watch(shellIndexProvider);
+
     return Scaffold(
-      body: IndexedStack(index: _index, children: _screens),
+      body: IndexedStack(index: index, children: _screens),
       bottomNavigationBar: AppBottomNav(
-        currentIndex: _index,
-        onTap: (i) => setState(() => _index = i),
+        currentIndex: index,
+        onTap: (i) => ref.read(shellIndexProvider.notifier).state = i,
       ),
     );
   }

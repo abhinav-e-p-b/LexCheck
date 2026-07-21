@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// UI-only theme state. Toggled from the Profile screen's
-/// "Terminal Night Mode" switch, exactly like the mock shows.
-class ThemeController extends ChangeNotifier {
-  ThemeMode _mode = ThemeMode.light;
+final themeProvider = NotifierProvider<ThemeNotifier, ThemeMode>(ThemeNotifier.new);
 
-  ThemeMode get mode => _mode;
-  bool get isDark => _mode == ThemeMode.dark;
+class ThemeNotifier extends Notifier<ThemeMode> {
+  @override
+  ThemeMode build() => ThemeMode.light;
+
+  bool get isDark => state == ThemeMode.dark;
 
   void toggle(bool dark) {
-    _mode = dark ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
+    state = dark ? ThemeMode.dark : ThemeMode.light;
   }
 
-  void set(ThemeMode mode) {
-    _mode = mode;
-    notifyListeners();
+  void setMode(ThemeMode mode) {
+    state = mode;
   }
 }

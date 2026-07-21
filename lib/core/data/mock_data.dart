@@ -1,40 +1,4 @@
-/// All static/mock data for the UI-only prototype. No network or backend
-/// calls are made anywhere in the app; every screen reads from here.
-class RecentDocument {
-  const RecentDocument(this.name, this.status);
-  final String name;
-  final String status;
-}
-
-class TrendingRisk {
-  const TrendingRisk({
-    required this.badge,
-    required this.title,
-    required this.description,
-  });
-  final String badge; // HIGH RISK / UPDATE / CRITICAL / MODERATE
-  final String title;
-  final String description;
-}
-
-class ChatMessage {
-  const ChatMessage({required this.fromBot, required this.text});
-  final bool fromBot;
-  final String text;
-}
-
-class EmergencyService {
-  const EmergencyService({
-    required this.id,
-    required this.title,
-    required this.description,
-    required this.number,
-  });
-  final String id;
-  final String title;
-  final String description;
-  final String number;
-}
+import 'models.dart';
 
 class MockData {
   MockData._();

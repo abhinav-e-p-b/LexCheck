@@ -80,7 +80,7 @@ class _DialPainter extends CustomPainter {
         ..strokeWidth = strokeWidth;
 
       final bands = [lowColor, midColor, highColor];
-      final sweepEach = math.pi / 3;
+      const sweepEach = math.pi / 3;
       for (var i = 0; i < 3; i++) {
         bandPaint.color = bands[i];
         canvas.drawArc(

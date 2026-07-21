@@ -88,7 +88,7 @@ class LoginScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _FieldLabel(isDark ? 'ENCRYPTED_PASSPHRASE' : '⚷ PASSPHRASE'),
                     const SizedBox(height: 8),
-                    _TerminalField(hint: 'Passphrase', obscure: true),
+                    const _TerminalField(hint: 'Passphrase', obscure: true),
                     const SizedBox(height: 24),
                     AppButton(
                       label: 'EXECUTE LOGIN',

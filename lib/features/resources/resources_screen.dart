@@ -1,25 +1,43 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
+import '../../core/data/models.dart';
+import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_top_bar.dart';
 import '../../core/widgets/labels.dart';
 
-class ResourcesScreen extends StatefulWidget {
+class ResourcesScreen extends ConsumerStatefulWidget {
   const ResourcesScreen({super.key});
 
   @override
-  State<ResourcesScreen> createState() => _ResourcesScreenState();
+  ConsumerState<ResourcesScreen> createState() => _ResourcesScreenState();
 }
 
-class _ResourcesScreenState extends State<ResourcesScreen> {
-  final Map<int, bool> _checklist = {0: false, 1: false, 2: true, 3: false};
+class _ResourcesScreenState extends ConsumerState<ResourcesScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final style = context.appStyle;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final checklist = ref.watch(checklistProvider);
+    final allServices = ref.watch(emergencyServicesProvider);
+    
+    final query = _searchController.text.toLowerCase();
+    final filteredServices = allServices.where((s) =>
+        s.title.toLowerCase().contains(query) ||
+        s.id.toLowerCase().contains(query) ||
+        s.description.toLowerCase().contains(query)
+    ).toList();
 
     final checklistItems = isDark
         ? const [
@@ -93,6 +111,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                             color: style.borderColor, width: style.borderWidth),
                       ),
                       child: TextField(
+                        controller: _searchController,
+                        onChanged: (_) => setState(() {}),
                         style: TextStyle(color: style.inkColor, fontSize: 13),
                         decoration: InputDecoration(
                           border: InputBorder.none,
@@ -128,8 +148,8 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
               const SizedBox(height: 16),
             ],
             for (final service in isDark
-                ? MockData.emergencyServices.take(3).toList()
-                : MockData.emergencyServices) ...[
+                ? filteredServices.take(3).toList()
+                : filteredServices) ...[
               _EmergencyCard(service: service),
               const SizedBox(height: 14),
             ],
@@ -247,10 +267,10 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Checkbox(
-                            value: _checklist[i] ?? false,
+                            value: checklist[i] ?? false,
                             activeColor: style.accentColor,
                             onChanged: (v) =>
-                                setState(() => _checklist[i] = v ?? false),
+                                ref.read(checklistProvider.notifier).toggle(i, v ?? false),
                           ),
                           Expanded(
                             child: Padding(

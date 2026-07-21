@@ -1,28 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_top_bar.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends State<ProfileScreen> {
-  bool _mechanicalFeedback = false;
-  bool _hapticOverlays = true;
-  bool _autoArchive = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final style = context.appStyle;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeController = context.watch<ThemeController>();
+    final theme = ref.watch(themeProvider);
+    final isDark = theme == ThemeMode.dark;
+    final settings = ref.watch(profileSettingsProvider);
+    final settingsNotifier = ref.read(profileSettingsProvider.notifier);
 
     return Scaffold(
       appBar: const AppTopBar(),
@@ -123,13 +117,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             if (!isDark)
-              Row(
+              const Row(
                 children: [
                   Expanded(
                     child: _StatBox(
                         label: 'CASE VELOCITY', value: '94.2%'),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: _StatBox(
                         label: 'COMPLIANCE RATE', value: 'SIGMA-9'),
@@ -232,8 +226,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: isDark
                   ? 'High contrast dark environment'
                   : 'Invert interface for low-light sessions',
-              value: themeController.isDark,
-              onChanged: themeController.toggle,
+              value: isDark,
+              onChanged: ref.read(themeProvider.notifier).toggle,
             ),
             const SizedBox(height: 12),
             _PrefTile(
@@ -242,8 +236,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: isDark
                   ? 'Audio triggers on interaction'
                   : 'Enable tactile audio cues on click',
-              value: _mechanicalFeedback,
-              onChanged: (v) => setState(() => _mechanicalFeedback = v),
+              value: settings.mechanicalFeedback,
+              onChanged: settingsNotifier.toggleMechanicalFeedback,
             ),
             const SizedBox(height: 12),
             _PrefTile(
@@ -252,8 +246,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               subtitle: isDark
                   ? 'Tactile UI simulation'
                   : 'Enhanced visual response patterns',
-              value: _hapticOverlays,
-              onChanged: (v) => setState(() => _hapticOverlays = v),
+              value: settings.hapticOverlays,
+              onChanged: settingsNotifier.toggleHapticOverlays,
             ),
             if (isDark) ...[
               const SizedBox(height: 12),
@@ -261,8 +255,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 icon: Icons.archive_outlined,
                 title: 'Auto-Archive Buffer',
                 subtitle: 'Preserve session logs locally',
-                value: _autoArchive,
-                onChanged: (v) => setState(() => _autoArchive = v),
+                value: settings.autoArchive,
+                onChanged: settingsNotifier.toggleAutoArchive,
               ),
             ],
             const SizedBox(height: 20),
@@ -280,7 +274,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     icon: Icons.shield_outlined,
                     title: 'Clear Activity Buffer',
                     trailing: Icon(Icons.chevron_right, color: style.inkMutedColor),
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text('Activity buffer cleared'), backgroundColor: style.accentColor),
+                      );
+                    },
                   ),
                   Divider(height: 1, color: style.borderColor.withValues(alpha: 0.3)),
                   _ActionRow(
@@ -305,7 +303,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     titleColor: Colors.red.shade400,
                     trailing:
                         Icon(Icons.warning_amber_rounded, color: Colors.red.shade400),
-                    onTap: () {},
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: const Text('Decommission requested.'), backgroundColor: Colors.red.shade400),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -426,7 +428,7 @@ class _PrefTile extends StatelessWidget {
           ),
           Switch(
             value: value,
-            activeColor: style.accentColor,
+            activeTrackColor: style.accentColor,
             onChanged: onChanged,
           ),
         ],
