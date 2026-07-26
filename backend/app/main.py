@@ -32,6 +32,10 @@ async def startup_event():
     get_vector_store_manager()
     logger.info("Application startup complete.")
 
+@app.get("/")
+def read_root():
+    return {"status": "Running", "app": settings.APP_NAME}
+
 app.include_router(router)
 
 if __name__ == "__main__":
