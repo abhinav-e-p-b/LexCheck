@@ -6,10 +6,11 @@ import '../theme/app_style.dart';
 /// Light mode: "☰  LEXCHECK  (?)"
 /// Dark mode:  "⌗ LEGAL_CORE_v1.0  🛡"
 class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
-  const AppTopBar({super.key, this.onMenuTap, this.onHelpTap});
+  const AppTopBar({super.key, this.onMenuTap, this.onHelpTap, this.showBackButton = false});
 
   final VoidCallback? onMenuTap;
   final VoidCallback? onHelpTap;
+  final bool showBackButton;
 
   @override
   Size get preferredSize => const Size.fromHeight(56);
@@ -29,9 +30,11 @@ class AppTopBar extends StatelessWidget implements PreferredSizeWidget {
       child: Row(
         children: [
           InkWell(
-            onTap: onMenuTap,
+            onTap: showBackButton ? () => Navigator.of(context).pop() : onMenuTap,
             child: Icon(
-              isDark ? Icons.terminal : Icons.menu,
+              showBackButton
+                  ? (isDark ? Icons.arrow_back_ios : Icons.arrow_back)
+                  : (isDark ? Icons.terminal : Icons.menu),
               color: style.inkColor,
               size: 22,
             ),

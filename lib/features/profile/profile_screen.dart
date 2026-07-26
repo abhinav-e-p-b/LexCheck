@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_top_bar.dart';
-import '../onboarding/welcome_screen.dart';
+
+// ─── Constants (easy to update) ───────────────────────────────────────────────
+
+const _kSupportEmail = 'support@lexcheck.app';
+const _kPrivacyUrl = 'https://lexcheck.app/privacy';
+const _kTermsUrl = 'https://lexcheck.app/terms';
+const _kPlayStoreUrl =
+    'https://play.google.com/store/apps/details?id=app.lexcheck';
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -25,354 +37,200 @@ class ProfileScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 70,
-                        height: 70,
-                        decoration: BoxDecoration(
-                          color: style.cardBackgroundAlt,
-                          border: Border.all(
-                              color: style.borderColor, width: style.borderWidth),
-                        ),
-                        child: Icon(Icons.face_outlined,
-                            size: 40, color: style.inkColor),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text('LEGAL ASSOCIATE',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                          color: isDark
-                                              ? style.accentColor
-                                              : style.inkColor)),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 3),
-                                  color: style.accentColor,
-                                  child: const Text('LVL 42',
-                                      style: TextStyle(
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.black87)),
-                                ),
-                              ],
-                            ),
-                            Text('ID: LX-83KD92',
-                                style: TextStyle(
-                                    fontSize: 12, color: style.inkMutedColor)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  if (isDark) ...[
-                    _KeyValueRow(label: 'CLEARANCE:', value: 'LEVEL-4', style: style),
-                    const SizedBox(height: 6),
-                    _KeyValueRow(label: 'REGION:', value: 'EU-NORTH-1', style: style),
-                  ] else
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('STATUS',
-                            style: TextStyle(
-                                fontSize: 11, color: style.inkMutedColor)),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: style.borderColor),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                color: Colors.green,
-                              ),
-                              const SizedBox(width: 6),
-                              Text('ONLINE',
-                                  style: TextStyle(
-                                      fontSize: 11, color: style.inkColor)),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (!isDark)
-              const Row(
-                children: [
-                  Expanded(
-                    child: _StatBox(
-                        label: 'CASE VELOCITY', value: '94.2%'),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: _StatBox(
-                        label: 'COMPLIANCE RATE', value: 'SIGMA-9'),
-                  ),
-                ],
-              )
-            else ...[
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Case Velocity',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700,
-                                color: style.inkColor)),
-                        Icon(Icons.bolt, size: 16, color: style.accentColor),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text('94.2%',
-                        style: TextStyle(
-                            color: style.accentColor,
-                            fontWeight: FontWeight.w700)),
-                    const SizedBox(height: 8),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: 0.942,
-                        minHeight: 6,
-                        backgroundColor: style.borderColor.withValues(alpha: 0.25),
-                        valueColor:
-                            AlwaysStoppedAnimation(style.accentColor),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              AppCard(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Compliance Rate',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w700, color: style.inkColor)),
-                    Row(
-                      children: [
-                        Icon(Icons.shield_outlined,
-                            size: 16, color: style.accentColor),
-                        const SizedBox(width: 6),
-                        Text('Sigma-9',
-                            style: TextStyle(color: style.inkMutedColor)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              AppCard(
-                borderColor: style.accentColor,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.history, size: 14, color: style.accentColor),
-                        const SizedBox(width: 6),
-                        Text('ACTIVE_SESSION_LOG',
-                            style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
-                                color: style.accentColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '> [14:22] ACCESSING LEXCHAT_CORE_ENCRYPTION...\n'
-                      '> [14:23] CASE_822-J FILED SUCCESSFULLY.\n'
-                      '> [15:01] DATA_BUFFER_70%_FULL. RECOMMEND_CLEARANCE.',
-                      style: TextStyle(
-                          fontSize: 11, color: style.inkMutedColor, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            const SizedBox(height: 20),
-            Text('APP PREFERENCES',
-                style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    color: style.inkMutedColor)),
+            // ── APP SETTINGS ───────────────────────────────────────────────
+            _SectionHeading(title: 'APP SETTINGS', style: style),
             const SizedBox(height: 10),
             _PrefTile(
               icon: Icons.nightlight_round,
-              title: 'Terminal Night Mode',
+              title: 'Dark Mode',
               subtitle: isDark
-                  ? 'High contrast dark environment'
-                  : 'Invert interface for low-light sessions',
+                  ? 'High-contrast terminal environment active'
+                  : 'Switch to high-contrast terminal mode',
               value: isDark,
               onChanged: ref.read(themeProvider.notifier).toggle,
+              style: style,
+              isDark: isDark,
             ),
-            const SizedBox(height: 12),
-            _PrefTile(
-              icon: Icons.volume_up_outlined,
-              title: 'Mechanical Feedback',
-              subtitle: isDark
-                  ? 'Audio triggers on interaction'
-                  : 'Enable tactile audio cues on click',
-              value: settings.mechanicalFeedback,
-              onChanged: settingsNotifier.toggleMechanicalFeedback,
-            ),
-            const SizedBox(height: 12),
-            _PrefTile(
-              icon: Icons.crop_din,
-              title: 'Haptic Overlays',
-              subtitle: isDark
-                  ? 'Tactile UI simulation'
-                  : 'Enhanced visual response patterns',
-              value: settings.hapticOverlays,
-              onChanged: settingsNotifier.toggleHapticOverlays,
-            ),
-            if (isDark) ...[
-              const SizedBox(height: 12),
-              _PrefTile(
-                icon: Icons.archive_outlined,
-                title: 'Auto-Archive Buffer',
-                subtitle: 'Preserve session logs locally',
-                value: settings.autoArchive,
-                onChanged: settingsNotifier.toggleAutoArchive,
-              ),
-            ],
-            const SizedBox(height: 20),
-            Text('PRIVACY & DATA',
-                style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                    color: style.inkMutedColor)),
+            const SizedBox(height: 24),
+
+            // ── ABOUT ──────────────────────────────────────────────────────
+            _SectionHeading(title: 'ABOUT', style: style),
             const SizedBox(height: 10),
             AppCard(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
                   _ActionRow(
-                    icon: Icons.shield_outlined,
-                    title: 'Clear Activity Buffer',
-                    trailing: Icon(Icons.chevron_right, color: style.inkMutedColor),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: const Text('Activity buffer cleared'), backgroundColor: style.accentColor),
-                      );
-                    },
-                  ),
-                  Divider(height: 1, color: style.borderColor.withValues(alpha: 0.3)),
-                  _ActionRow(
-                    icon: Icons.vpn_key_outlined,
-                    title: 'Terminal Encryption Keys',
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      color: style.inkColor,
-                      child: Text('SECURE',
-                          style: TextStyle(
-                              fontSize: 10,
-                              color: style.scaffoldBackground,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                    onTap: () {},
-                  ),
-                  Divider(height: 1, color: style.borderColor.withValues(alpha: 0.3)),
-                  _ActionRow(
-                    icon: Icons.remove_circle_outline,
-                    title: 'Decommission Profile',
-                    titleColor: Colors.red.shade400,
+                    icon: Icons.info_outline,
+                    title: 'About LexCheck',
                     trailing:
-                        Icon(Icons.warning_amber_rounded, color: Colors.red.shade400),
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: const Text('Decommission requested.'), backgroundColor: Colors.red.shade400),
-                      );
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _showAboutDialog(context, style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.tag,
+                    title: 'App Version',
+                    trailing: FutureBuilder<PackageInfo>(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (ctx, snap) {
+                        final version = snap.hasData
+                            ? '${snap.data!.version}+${snap.data!.buildNumber}'
+                            : '...';
+                        return Text(
+                          version,
+                          style: TextStyle(
+                              fontSize: 12, color: style.inkMutedColor),
+                        );
+                      },
+                    ),
+                    onTap: null,
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.privacy_tip_outlined,
+                    title: 'Privacy Policy',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _launchUrl(context, _kPrivacyUrl, style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.description_outlined,
+                    title: 'Terms & Conditions',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _launchUrl(context, _kTermsUrl, style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.balance_outlined,
+                    title: 'Open Source Licenses',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () async {
+                      final info = await PackageInfo.fromPlatform();
+                      if (context.mounted) {
+                        showLicensePage(
+                          context: context,
+                          applicationName: 'LexCheck',
+                          applicationVersion: info.version,
+                        );
+                      }
                     },
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            InkWell(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    backgroundColor: style.cardBackground,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(style.cardRadius),
-                      side: BorderSide(color: style.borderColor, width: style.borderWidth),
-                    ),
-                    title: Text(
-                      'TERMINATE SESSION?',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        color: style.inkColor,
-                        fontSize: 16,
-                      ),
-                    ),
-                    content: Text(
-                      'All active session data will be cleared. You will be returned to the start screen.',
-                      style: TextStyle(fontSize: 13, color: style.inkMutedColor),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: Text('CANCEL',
-                            style: TextStyle(color: style.inkMutedColor)),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          Navigator.of(context).pushAndRemoveUntil(
-                            MaterialPageRoute(
-                                builder: (_) => const WelcomeScreen()),
-                            (route) => false,
-                          );
-                        },
-                        child: Text('CONFIRM',
-                            style: TextStyle(
-                                color: Colors.red.shade400,
-                                fontWeight: FontWeight.w800)),
+            const SizedBox(height: 24),
+
+            // ── SUPPORT ────────────────────────────────────────────────────
+            _SectionHeading(title: 'SUPPORT', style: style),
+            const SizedBox(height: 10),
+            AppCard(
+              padding: EdgeInsets.zero,
+              child: Column(
+                children: [
+                  _ActionRow(
+                    icon: Icons.headset_mic_outlined,
+                    title: 'Contact Support',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _launchEmail(
+                        context, _kSupportEmail, 'Support Request', style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.feedback_outlined,
+                    title: 'Send Feedback',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _launchEmail(
+                        context, _kSupportEmail, 'App Feedback', style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.bug_report_outlined,
+                    title: 'Report a Bug',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _launchEmail(
+                        context, _kSupportEmail, 'Bug Report', style),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.share_outlined,
+                    title: 'Share App',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () => _shareApp(),
+                  ),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
+                  _ActionRow(
+                    icon: Icons.star_outline,
+                    title: 'Rate App',
+                    trailing:
+                        Icon(Icons.chevron_right, color: style.inkMutedColor),
+                    onTap: () =>
+                        _launchUrl(context, _kPlayStoreUrl, style),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // ── LEGAL INFORMATION ──────────────────────────────────────────
+            _SectionHeading(title: 'LEGAL INFORMATION', style: style),
+            const SizedBox(height: 10),
+            AppCard(
+              borderColor: style.accentColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded,
+                          size: 16, color: style.accentColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'EMERGENCY DISCLAIMER',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 12,
+                          color: style.accentColor,
+                        ),
                       ),
                     ],
                   ),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: style.inkColor.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.circular(style.cardRadius),
-                ),
-                child: Center(
-                  child: Text('TERMINATE SESSION',
-                      style: TextStyle(
-                          color: style.scaffoldBackground,
-                          fontWeight: FontWeight.w800)),
-                ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'LexCheck provides legal awareness and educational guidance '
+                    'only. It is not a substitute for emergency services, police '
+                    'assistance, legal representation or professional legal advice. '
+                    'In any life-threatening situation, always contact emergency '
+                    'services (112) immediately.',
+                    style: TextStyle(
+                        fontSize: 12.5,
+                        color: style.inkMutedColor,
+                        height: 1.5),
+                  ),
+                ],
               ),
             ),
           ],
@@ -380,47 +238,107 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
-class _KeyValueRow extends StatelessWidget {
-  const _KeyValueRow({required this.label, required this.value, required this.style});
-  final String label;
-  final String value;
-  final AppStyle style;
+  // ── Helpers ──────────────────────────────────────────────────────────────────
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: style.inkMutedColor)),
-        Text(value,
-            style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w700, color: style.accentColor)),
-      ],
+  void _showAboutDialog(BuildContext context, AppStyle style) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: style.cardBackground,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(style.cardRadius),
+          side: BorderSide(color: style.borderColor, width: style.borderWidth),
+        ),
+        title: Text(
+          'ABOUT LEXCHECK',
+          style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: style.inkColor,
+              fontSize: 16),
+        ),
+        content: Text(
+          'LexCheck is a legal awareness and emergency resource companion '
+          'designed for Indian citizens. It provides easy access to helpline '
+          'numbers, legal guidance, emergency checklists, and educational '
+          'content about your rights.\n\n'
+          'Built to empower individuals with knowledge when it matters most.',
+          style: TextStyle(
+              fontSize: 13, color: style.inkMutedColor, height: 1.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text('CLOSE',
+                style: TextStyle(color: style.accentColor,
+                    fontWeight: FontWeight.w800)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _launchUrl(
+      BuildContext context, String url, AppStyle style) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open: $url'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _launchEmail(
+      BuildContext context, String email, String subject, AppStyle style) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: email,
+      queryParameters: {'subject': subject},
+    );
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open email client.'),
+            backgroundColor: Colors.red.shade400,
+          ),
+        );
+      }
+    }
+  }
+
+  void _shareApp() {
+    Share.share(
+      'Check out LexCheck – your legal awareness companion!\n'
+      'Download it here: $_kPlayStoreUrl',
     );
   }
 }
 
-class _StatBox extends StatelessWidget {
-  const _StatBox({required this.label, required this.value});
-  final String label;
-  final String value;
+// ─── Private sub-widgets (reused patterns from original file) ─────────────────
+
+class _SectionHeading extends StatelessWidget {
+  const _SectionHeading({required this.title, required this.style});
+  final String title;
+  final AppStyle style;
 
   @override
   Widget build(BuildContext context) {
-    final style = context.appStyle;
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: TextStyle(fontSize: 10, color: style.inkMutedColor)),
-          const SizedBox(height: 6),
-          Text(value,
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.w800, color: style.inkColor)),
-        ],
+    return Text(
+      title,
+      style: TextStyle(
+        fontWeight: FontWeight.w800,
+        fontSize: 12,
+        color: style.inkMutedColor,
       ),
     );
   }
@@ -433,6 +351,8 @@ class _PrefTile extends StatelessWidget {
     required this.subtitle,
     required this.value,
     required this.onChanged,
+    required this.style,
+    required this.isDark,
   });
 
   final IconData icon;
@@ -440,12 +360,11 @@ class _PrefTile extends StatelessWidget {
   final String subtitle;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final AppStyle style;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
-    final style = context.appStyle;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return AppCard(
       child: Row(
         children: [
@@ -464,10 +383,12 @@ class _PrefTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: TextStyle(fontWeight: FontWeight.w700, color: style.inkColor)),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700, color: style.inkColor)),
                 const SizedBox(height: 2),
                 Text(subtitle,
-                    style: TextStyle(fontSize: 11.5, color: style.inkMutedColor)),
+                    style:
+                        TextStyle(fontSize: 11.5, color: style.inkMutedColor)),
               ],
             ),
           ),
@@ -494,7 +415,7 @@ class _ActionRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final Widget trailing;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final Color? titleColor;
 
   @override
