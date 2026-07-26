@@ -10,3 +10,5 @@ pydantic-settings
 pandas
 numpy
 python-multipart
+pypdf
+python-docx

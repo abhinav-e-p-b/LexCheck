@@ -6,6 +6,7 @@ import '../../core/theme/app_style.dart';
 import '../../core/theme/theme_controller.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_top_bar.dart';
+import '../onboarding/welcome_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -314,7 +315,51 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 20),
             InkWell(
-              onTap: () {},
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog(
+                    backgroundColor: style.cardBackground,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(style.cardRadius),
+                      side: BorderSide(color: style.borderColor, width: style.borderWidth),
+                    ),
+                    title: Text(
+                      'TERMINATE SESSION?',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: style.inkColor,
+                        fontSize: 16,
+                      ),
+                    ),
+                    content: Text(
+                      'All active session data will be cleared. You will be returned to the start screen.',
+                      style: TextStyle(fontSize: 13, color: style.inkMutedColor),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text('CANCEL',
+                            style: TextStyle(color: style.inkMutedColor)),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                                builder: (_) => const WelcomeScreen()),
+                            (route) => false,
+                          );
+                        },
+                        child: Text('CONFIRM',
+                            style: TextStyle(
+                                color: Colors.red.shade400,
+                                fontWeight: FontWeight.w800)),
+                      ),
+                    ],
+                  ),
+                );
+              },
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 16),
