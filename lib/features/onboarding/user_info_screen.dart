@@ -230,22 +230,7 @@ class _UserInfoScreenState extends State<UserInfoScreen> {
                   (route) => false,
                 ),
               ),
-              const SizedBox(height: 14),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (_) => const MainShell()),
-                    (route) => false,
-                  ),
-                  child: Text(
-                    'Skip for now',
-                    style: TextStyle(
-                      color: style.inkMutedColor,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
+
             ],
           ),
         ),

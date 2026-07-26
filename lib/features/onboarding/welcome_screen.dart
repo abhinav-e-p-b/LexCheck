@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
-import 'login_screen.dart';
-import 'privacy_selection_screen.dart';
+import 'user_info_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -132,17 +131,8 @@ class WelcomeScreen extends StatelessWidget {
                 icon: Icons.arrow_forward,
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => const PrivacySelectionScreen(),
+                    builder: (_) => const UserInfoScreen(),
                   ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'EXISTING USER LOGIN',
-                icon: Icons.person_outline,
-                variant: AppButtonVariant.secondary,
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
                 ),
               ),
               const SizedBox(height: 24),
