@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "title": "Information Technology Act, 2000 — Key Sections Reference",
+    "note": "Educational plain-language summaries. NOT legal advice and not the authoritative text. Always consult the bare Act and current amendments.",
+    "source_hint": "Refer to the official IT Act, 2000 (as amended by the IT (Amendment) Act, 2008) and the IT Rules, 2021.",
+    "compiled": "2026",
+    "sections_count": 14,
+    "rules_count": 6
+  },
+  "sections": [
+    {
+      "section": "43",
+      "title": "Penalty and compensation for damage to computer, computer system, etc.",
+      "category": "Civil / Data protection",
+      "cognizable": "Civil liability (compensation)",
+      "summary": "Covers unauthorised access, downloading, introducing viruses, causing damage, disrupting, denying access, or tampering with a computer, computer system or network without the owner's permission. The person is liable to pay damages by way of compensation to the affected party.",
+      "penalty": "Liable to pay damages by way of compensation to the person affected. No upper cap fixed in the section after the 2008 amendment.",
+      "keywords": ["unauthorised access", "hacking", "virus", "damage", "compensation", "civil"]
+    },
+    {
+      "section": "43A",
+      "title": "Compensation for failure to protect data",
+      "category": "Data protection",
+      "cognizable": "Civil liability (compensation)",
+      "summary": "A body corporate that possesses, deals with or handles sensitive personal data in a computer resource it owns or operates, and is negligent in implementing and maintaining reasonable security practices, causing wrongful loss or gain, is liable to pay compensation to the affected person.",
+      "penalty": "Liable to pay damages by way of compensation to the affected person. Amount determined on the facts; no statutory ceiling.",
+      "keywords": ["sensitive personal data", "body corporate", "reasonable security practices", "negligence", "compensation"]
+    },
+    {
+      "section": "65",
+      "title": "Tampering with computer source documents",
+      "category": "Criminal",
+      "cognizable": "Cognizable, bailable",
+      "summary": "Knowingly or intentionally concealing, destroying or altering (or causing another to conceal, destroy or alter) computer source code required to be kept or maintained by law.",
+      "penalty": "Imprisonment up to 3 years, or fine up to Rs. 2 lakh, or both.",
+      "keywords": ["source code", "tampering", "conceal", "destroy", "alter"]
+    },
+    {
+      "section": "66",
+      "title": "Computer related offences",
+      "category": "Criminal",
+      "cognizable": "Cognizable, bailable",
+      "summary": "If any act referred to in Section 43 is done dishonestly or fraudulently, it becomes a criminal offence under Section 66 (e.g., dishonest hacking, data theft, denial of service).",
+      "penalty": "Imprisonment up to 3 years, or fine up to Rs. 5 lakh, or both.",
+      "keywords": ["dishonestly", "fraudulently", "hacking", "data theft", "criminal"]
+    },
+    {
+      "section": "66C",
+      "title": "Punishment for identity theft",
+      "category": "Criminal",
+      "cognizable": "Cognizable, bailable",
+      "summary": "Fraudulently or dishonestly using another person's electronic signature, password or any other unique identification feature (identity theft).",
+      "penalty": "Imprisonment up to 3 years and fine up to Rs. 1 lakh.",
+      "keywords": ["identity theft", "password", "electronic signature", "impersonation", "unique id"]
+    },
+    {
+      "section": "66D",
+      "title": "Cheating by personation using computer resource",
+      "category": "Criminal",
+      "cognizable": "Cognizable, bailable",
+      "summary": "Cheating by personation (pretending to be someone else) by means of any communication device or computer resource — the legal basis for many phishing, vishing and online-fraud cases.",
+      "penalty": "Imprisonment up to 3 years and fine up to Rs. 1 lakh.",
+      "keywords": ["cheating", "personation", "phishing", "impersonation", "fraud", "vishing"]
+    },
+    {
+      "section": "66E",
+      "title": "Punishment for violation of privacy",
+      "category": "Criminal / Privacy",
+      "cognizable": "Cognizable, bailable",
+      "summary": "Intentionally capturing, publishing or transmitting the image of a private area of any person without consent, under circumstances violating that person's privacy.",
+      "penalty": "Imprisonment up to 3 years, or fine up to Rs. 2 lakh, or both.",
+      "keywords": ["privacy", "voyeurism", "private area", "image", "consent"]
+    },
+    {
+      "section": "66F",
+      "title": "Punishment for cyber terrorism",
+      "category": "Criminal (grave)",
+      "cognizable": "Cognizable, non-bailable",
+      "summary": "Acts intended to threaten the unity, integrity, security or sovereignty of India, or to strike terror, by denying access to a computer resource, unauthorised access to protected systems, or introducing contaminants — and acts causing or likely to cause death, injury, damage to critical infrastructure, or access to restricted information affecting national security.",
+      "penalty": "Imprisonment which may extend to imprisonment for life.",
+      "keywords": ["cyber terrorism", "national security", "critical infrastructure", "sovereignty", "life imprisonment"]
+    },
+    {
+      "section": "67",
+      "title": "Publishing or transmitting obscene material in electronic form",
+      "category": "Criminal / Content",
+      "cognizable": "Cognizable, bailable (first offence)",
+      "summary": "Publishing or transmitting, in electronic form, material that is lascivious or appeals to prurient interest, or tends to deprave and corrupt those likely to read, see or hear it. (Sections 67A and 67B deal with sexually explicit material and child sexual abuse material respectively, with higher penalties.)",
+      "penalty": "First conviction: imprisonment up to 3 years and fine up to Rs. 5 lakh. Subsequent conviction: up to 5 years and fine up to Rs. 10 lakh.",
+      "keywords": ["obscene", "content", "publishing", "electronic form", "prurient"]
+    },
+    {
+      "section": "69",
+      "title": "Power to issue directions for interception, monitoring or decryption",
+      "category": "Government power",
+      "cognizable": "Enabling provision",
+      "summary": "Empowers the Central or State Government to direct interception, monitoring or decryption of information through any computer resource, in the interest of the sovereignty and integrity of India, defence, security of the State, friendly relations with foreign States, public order, or for preventing incitement to a cognizable offence. A subscriber/intermediary failing to assist may be punished.",
+      "penalty": "Failure to assist the agency: imprisonment up to 7 years and fine (for the intermediary/person who fails to comply).",
+      "keywords": ["interception", "monitoring", "decryption", "surveillance", "government power", "assistance"]
+    },
+    {
+      "section": "69A",
+      "title": "Power to block public access to information",
+      "category": "Government power / Content blocking",
+      "cognizable": "Enabling provision",
+      "summary": "Empowers the Central Government to direct any agency or intermediary to block public access to information through a computer resource, on the grounds of sovereignty and integrity of India, defence, security of the State, friendly relations with foreign States, public order, or preventing incitement to a cognizable offence. The procedure and safeguards are set out in the IT (Blocking) Rules, 2009, which include a Committee and review mechanism.",
+      "penalty": "An intermediary that fails to comply with a blocking direction: imprisonment up to 7 years and fine.",
+      "keywords": ["blocking", "content blocking", "69A", "public access", "intermediary", "blocking rules 2009"]
+    },
+    {
+      "section": "70",
+      "title": "Protected system",
+      "category": "Critical infrastructure",
+      "cognizable": "Cognizable, non-bailable",
+      "summary": "The appropriate Government may declare any computer resource which directly or indirectly affects a Critical Information Infrastructure to be a 'protected system'. Unauthorised access to a protected system is a serious offence.",
+      "penalty": "Unauthorised access to a protected system: imprisonment up to 10 years and fine.",
+      "keywords": ["protected system", "critical information infrastructure", "CII", "unauthorised access"]
+    },
+    {
+      "section": "70B",
+      "title": "Indian Computer Emergency Response Team (CERT-In)",
+      "category": "Institutional",
+      "cognizable": "Enabling / compliance",
+      "summary": "Designates CERT-In as the national agency for incident response — collecting, analysing and disseminating information on cyber incidents, issuing alerts and advisories, coordinating emergency response, and issuing directions. Service providers, intermediaries, data centres and body corporates must comply with CERT-In directions (including the 2022 incident-reporting directions).",
+      "penalty": "Failure to provide information or comply with CERT-In directions: imprisonment up to 1 year, or fine up to Rs. 1 lakh, or both.",
+      "keywords": ["CERT-In", "incident response", "reporting", "advisories", "national agency"]
+    },
+    {
+      "section": "79",
+      "title": "Exemption from liability of intermediary (safe harbour)",
+      "category": "Intermediary liability",
+      "cognizable": "Safe-harbour provision",
+      "summary": "Provides conditional 'safe harbour' — an intermediary is not liable for third-party information it hosts if it is a mere conduit, observes due diligence, and does not initiate/select/modify the transmission. Protection is lost if the intermediary conspires/abets or fails to expeditiously remove content on actual knowledge or on being notified by the appropriate Government/agency. Due-diligence obligations are detailed in the IT Rules, 2021.",
+      "penalty": "No direct penalty; loss of safe-harbour exposes the intermediary to liability for the underlying content.",
+      "keywords": ["intermediary", "safe harbour", "due diligence", "liability", "takedown", "section 79"]
+    }
+  ],
+  "rules_2021": [
+    {
+      "rule": "IT Rules 2021 — Part II overview",
+      "title": "Intermediary Guidelines & Digital Media Ethics Code Rules, 2021",
+      "category": "Intermediary due diligence",
+      "summary": "Framed under the IT Act, 2000 (mainly ss. 79 and 87). Part II prescribes due-diligence obligations for intermediaries; Part III (administered by the Ministry of I&B) covers a Code of Ethics and grievance mechanism for digital news publishers and OTT platforms.",
+      "penalty": "Non-compliance can lead to loss of safe harbour under Section 79 and consequent liability.",
+      "keywords": ["IT Rules 2021", "intermediary guidelines", "digital media ethics", "due diligence"]
+    },
+    {
+      "rule": "Rule 3(1)(a)-(b)",
+      "title": "Publish rules, privacy policy and user agreement; inform users of prohibited content",
+      "category": "Due diligence",
+      "summary": "Intermediaries must prominently publish their rules, privacy policy and user agreement, and make reasonable efforts to cause users not to host or share specified categories of unlawful/prohibited content.",
+      "penalty": "Failure affects the intermediary's Section 79 safe harbour.",
+      "keywords": ["privacy policy", "user agreement", "prohibited content", "due diligence"]
+    },
+    {
+      "rule": "Rule 3(1)(d)",
+      "title": "Takedown on actual knowledge / court order or government notification",
+      "category": "Content takedown",
+      "summary": "On receiving actual knowledge via a court order or a notification from the appropriate Government/agency, an intermediary must not host/store/publish the unlawful information and must remove or disable access to it within 36 hours.",
+      "penalty": "Failure affects Section 79 safe harbour and can attract liability.",
+      "keywords": ["takedown", "36 hours", "court order", "actual knowledge", "removal"]
+    },
+    {
+      "rule": "Rule 3(2)",
+      "title": "Grievance redressal — acknowledge 24h, resolve 15 days; 24h for certain content",
+      "category": "Grievance redressal",
+      "summary": "Intermediaries must appoint a Grievance Officer, acknowledge complaints within 24 hours and dispose of them within 15 days. Complaints about certain content (e.g., non-consensual intimate imagery) must be actioned within 24 hours.",
+      "penalty": "Failure affects Section 79 safe harbour.",
+      "keywords": ["grievance officer", "24 hours", "15 days", "redressal", "complaint"]
+    },
+    {
+      "rule": "Rule 4",
+      "title": "Additional due diligence for Significant Social Media Intermediaries (SSMIs)",
+      "category": "Significant intermediaries",
+      "summary": "SSMIs (above a notified user threshold) must appoint a Chief Compliance Officer, a Nodal Contact Person and a resident Grievance Officer (all in India), publish monthly compliance reports, and — for messaging services — enable identification of the first originator of information where lawfully required.",
+      "penalty": "Non-compliance can lead to loss of safe harbour under Section 79.",
+      "keywords": ["SSMI", "chief compliance officer", "nodal contact", "first originator", "traceability"]
+    },
+    {
+      "rule": "Grievance Appellate Committee (2022 amendment)",
+      "title": "Grievance Appellate Committee (GAC)",
+      "category": "Appeals",
+      "summary": "Introduced by the 2022 amendment: users dissatisfied with an intermediary's grievance decision may appeal to a Grievance Appellate Committee within 30 days, providing an appellate layer above the intermediary's own Grievance Officer.",
+      "penalty": "Applies to intermediary grievance decisions; supports Section 79 compliance framework.",
+      "keywords": ["GAC", "appeal", "grievance appellate committee", "30 days", "2022 amendment"]
+    }
+  ]
+}

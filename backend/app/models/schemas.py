@@ -1,10 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Dict, Any, Optional
 
-class ChatRequest(BaseModel):
-    question: str = Field(..., description="The user's question regarding Indian news or law.")
-    history: Optional[List[Dict[str, str]]] = Field(default_factory=list, description="Optional conversation history.")
-
 class Source(BaseModel):
     dataset: str
     title: str
@@ -12,12 +8,20 @@ class Source(BaseModel):
     url: Optional[str] = None
     date: Optional[str] = None
 
+class ChatRequest(BaseModel):
+    question: str = Field(..., description="The user's question regarding Indian news or law.")
+    history: Optional[List[Dict[str, str]]] = Field(default_factory=list, description="Optional conversation history.")
+
 class ChatResponse(BaseModel):
-    answer: str
-    sources: List[Source]
-    confidence: float
-    retrieved_documents: List[Dict[str, Any]]
-    processing_time: float
+    severity: str = Field(..., description="Severity level: Safe, Minor, Caution, Serious, or Criminal")
+    verdict: str = Field(..., description="One sentence verdict")
+    explanation: str = Field(..., description="Plain English explanation of the legal situation")
+    laws_cited: List[str] = Field(..., description="List of relevant laws or sections, e.g. ['IT Act Sec 66E', 'BNS Sec 72']")
+    case_lens: str = Field(..., description="A related historical case or example scenario")
+    sources: List[Source] = Field(default_factory=list, description="Sources used to answer")
+    confidence: float = Field(0.0, description="Confidence score")
+    retrieved_documents: List[Dict[str, Any]] = Field(default_factory=list, description="Raw retrieved documents")
+    processing_time: float = Field(0.0, description="Time taken to process")
 
 # ---------------------------------------------------------------------------
 # Document Risk Scan models
