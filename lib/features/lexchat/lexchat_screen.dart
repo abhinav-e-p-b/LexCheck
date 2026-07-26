@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/data/models.dart';
 import '../../core/providers/mock_providers.dart';
+import '../../core/services/lex_api_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_card.dart';
@@ -19,27 +20,77 @@ class LexChatScreen extends ConsumerStatefulWidget {
 
 class _LexChatScreenState extends ConsumerState<LexChatScreen> {
   final _controller = TextEditingController();
+  final _scrollController = ScrollController();
+  final _apiService = LexApiService();
+  bool _isLoading = false;
 
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  void _sendMessage() {
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    if (text.isEmpty || _isLoading) return;
     _controller.clear();
 
-    ref.read(chatThreadProvider.notifier).addMessage(ChatMessage(fromBot: false, text: text));
-    
-    // Mock bot reply
-    ref.read(chatThreadProvider.notifier).addMessage(
-      const ChatMessage(
-        fromBot: true,
-        text: 'Acknowledged. Your query has been logged and marked for processing.',
-      ),
-    );
+    // Add user message immediately
+    ref
+        .read(chatThreadProvider.notifier)
+        .addMessage(ChatMessage(fromBot: false, text: text));
+    _scrollToBottom();
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await _apiService.sendMessage(text);
+
+      // Format sources block
+      String sourceSummary = '';
+      if (response.sources.isNotEmpty) {
+        final newsCount =
+            response.sources.where((s) => s.dataset == 'news').length;
+        final legalCount =
+            response.sources.where((s) => s.dataset == 'legal').length;
+        sourceSummary =
+            '\n\n📊 Sources: $newsCount news article(s), $legalCount legal document(s) retrieved'
+            '\n⏱ Processed in ${response.processingTime.toStringAsFixed(2)}s'
+            '\n🎯 Confidence: ${(response.confidence * 100).toStringAsFixed(1)}%';
+      }
+
+      ref.read(chatThreadProvider.notifier).addMessage(
+            ChatMessage(fromBot: true, text: response.answer + sourceSummary),
+          );
+    } catch (e) {
+      ref.read(chatThreadProvider.notifier).addMessage(
+            ChatMessage(
+              fromBot: true,
+              text:
+                  '⚠️ Backend Error: ${e.toString().replaceAll('Exception: ', '')}\n\n'
+                  'Make sure:\n'
+                  '1. The Python backend is running (uvicorn app.main:app --port 8000)\n'
+                  '2. Datasets have been ingested (python -m app.ingest)\n'
+                  '3. Ollama is running with a model loaded',
+            ),
+          );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+      _scrollToBottom();
+    }
   }
 
   @override
@@ -55,6 +106,7 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -199,6 +251,11 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
                       _ChatBubble(message: msg),
                       const SizedBox(height: 12),
                     ],
+                    if (_isLoading) ...[
+                      const SizedBox(height: 4),
+                      _TypingIndicator(),
+                      const SizedBox(height: 12),
+                    ],
                   ],
                 ),
               ),
@@ -206,10 +263,92 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
             _ChatInputBar(
               controller: _controller,
               onSend: _sendMessage,
+              isLoading: _isLoading,
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Animated typing indicator shown while waiting for the LLM.
+class _TypingIndicator extends StatefulWidget {
+  @override
+  State<_TypingIndicator> createState() => _TypingIndicatorState();
+}
+
+class _TypingIndicatorState extends State<_TypingIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.appStyle;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        CircleAvatar(
+          radius: 14,
+          backgroundColor: style.inkColor,
+          child: Icon(Icons.smart_toy_outlined,
+              size: 14, color: style.accentColor),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: style.cardBackground,
+            border:
+                Border.all(color: style.borderColor, width: style.borderWidth),
+            borderRadius: BorderRadius.circular(style.cardRadius),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(3, (i) {
+              return AnimatedBuilder(
+                animation: _controller,
+                builder: (_, __) {
+                  final offset =
+                      ((_controller.value + i * 0.3) % 1.0);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: Transform.translate(
+                      offset: Offset(0, -4 * (1 - (2 * offset - 1).abs())),
+                      child: Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: style.inkMutedColor,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text('LEX_SYS is thinking...',
+            style: TextStyle(fontSize: 11, color: style.inkMutedColor)),
+      ],
     );
   }
 }
@@ -312,9 +451,14 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _ChatInputBar extends StatelessWidget {
-  const _ChatInputBar({required this.controller, required this.onSend});
+  const _ChatInputBar({
+    required this.controller,
+    required this.onSend,
+    required this.isLoading,
+  });
   final TextEditingController controller;
   final VoidCallback onSend;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -334,8 +478,13 @@ class _ChatInputBar extends StatelessWidget {
               controller: controller,
               style: TextStyle(color: style.inkColor),
               onSubmitted: (_) => onSend(),
+              enabled: !isLoading,
               decoration: InputDecoration(
-                hintText: isDark ? 'Enter legal command' : 'Ask about specific clau',
+                hintText: isLoading
+                    ? 'Waiting for LEX_SYS response...'
+                    : isDark
+                        ? 'Enter legal command'
+                        : 'Ask about Indian news or law...',
                 hintStyle: TextStyle(color: style.inkMutedColor, fontSize: 13),
                 filled: true,
                 fillColor: style.cardBackground,
@@ -350,18 +499,29 @@ class _ChatInputBar extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: onSend,
+            onTap: isLoading ? null : onSend,
             child: Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: style.accentColor,
+                color: isLoading
+                    ? style.borderColor
+                    : style.accentColor,
                 borderRadius: BorderRadius.circular(style.cardRadius),
               ),
-              child: Icon(
-                isDark ? Icons.send : Icons.arrow_upward,
-                size: 18,
-                color: isDark ? style.scaffoldBackground : style.inkColor,
-              ),
+              child: isLoading
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: style.inkColor,
+                      ),
+                    )
+                  : Icon(
+                      isDark ? Icons.send : Icons.arrow_upward,
+                      size: 18,
+                      color: isDark ? style.scaffoldBackground : style.inkColor,
+                    ),
             ),
           ),
         ],
