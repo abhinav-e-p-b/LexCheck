@@ -1,3 +1,14 @@
+---
+title: LexCheck Backend
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: gradio
+sdk_version: 4.36.1
+app_file: app.py
+pinned: false
+---
+
 # Indian News and Law RAG Backend
 
 This is the backend for the RAG system integrating Indian News and Legal datasets.
