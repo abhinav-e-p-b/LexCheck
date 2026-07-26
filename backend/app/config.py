@@ -18,9 +18,9 @@ class Settings(BaseSettings):
     # Embeddings
     EMBEDDING_MODEL_NAME: str = "BAAI/bge-small-en-v1.5"
     
-    # LLM
-    OLLAMA_BASE_URL: str = "http://localhost:11434"
-    LLM_MODEL: str = "llama3" # Default Ollama model to use, can be changed
+    # LLM — Groq (free at console.groq.com)
+    GROQ_API_KEY: str = ""  # Paste your key here OR set env var GROQ_API_KEY
+    LLM_MODEL: str = "llama-3.1-8b-instant"  # Fast free model; alternatives: llama3-70b-8192, mixtral-8x7b-32768
     
     # Retrieval
     TOP_K_NEWS: int = 5

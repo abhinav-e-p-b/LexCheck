@@ -1,7 +1,10 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/data/models.dart';
+import '../../core/data/news_models.dart';
+import '../../core/providers/home_providers.dart';
 import '../../core/providers/mock_providers.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_style.dart';
@@ -39,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
 }
 
 // ---------------------------------------------------------------------------
-// LIGHT THEME BODY (Image 5)
+// LIGHT THEME BODY
 // ---------------------------------------------------------------------------
 class _LightHomeBody extends ConsumerWidget {
   const _LightHomeBody();
@@ -47,12 +50,14 @@ class _LightHomeBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final style = context.appStyle;
-    final trendingRisks = ref.watch(trendingRisksProvider);
+    final newsAsync = ref.watch(legalNewsProvider);
+    final scanState = ref.watch(riskScanProvider);
     final recentDocs = ref.watch(recentDocumentsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // ── Safety Profile ──────────────────────────────────────────────────
         AppCard(
           child: Column(
             children: [
@@ -80,7 +85,10 @@ class _LightHomeBody extends ConsumerWidget {
             ],
           ),
         ),
+
         const SizedBox(height: 16),
+
+        // ── Instant Risk Scanner ────────────────────────────────────────────
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,53 +98,97 @@ class _LightHomeBody extends ConsumerWidget {
                       fontWeight: FontWeight.w800, color: style.inkColor)),
               const SizedBox(height: 8),
               Text(
-                'Drop any document (PDF, DOCX) to analyze for predatory '
-                'clauses, hidden liabilities, and non-compliance markers in '
-                'real-time.',
+                'Upload any legal document (PDF, DOCX, TXT) to analyze for '
+                'predatory clauses, hidden liabilities, and non-compliance '
+                'markers in real-time.',
                 style: TextStyle(fontSize: 12.5, color: style.inkMutedColor),
               ),
               const SizedBox(height: 14),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 24),
-                decoration: BoxDecoration(
-                  color: style.cardBackgroundAlt,
-                  border: Border.all(
-                      color: style.borderColor.withValues(alpha: 0.4)),
+
+              // State-driven content
+              if (scanState.status == ScanStatus.success &&
+                  scanState.result != null)
+                _ScanResultCard(result: scanState.result!, style: style)
+              else if (scanState.status == ScanStatus.loading)
+                _ScanLoadingCard(
+                    fileName: scanState.fileName ?? 'document', style: style)
+              else if (scanState.status == ScanStatus.error)
+                _ScanErrorCard(
+                    error: scanState.error ?? 'Unknown error', style: style)
+              else
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  decoration: BoxDecoration(
+                    color: style.cardBackgroundAlt,
+                    border: Border.all(
+                        color: style.borderColor.withValues(alpha: 0.4)),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.cloud_upload_outlined,
+                          color: style.inkMutedColor, size: 28),
+                      const SizedBox(height: 8),
+                      Text('DRAG & DROP FILES',
+                          style: TextStyle(
+                              color: style.inkMutedColor,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 4),
+                      Text('PDF · DOCX · TXT',
+                          style: TextStyle(
+                              color: style.inkMutedColor, fontSize: 11)),
+                    ],
+                  ),
                 ),
-                child: Column(
-                  children: [
-                    Icon(Icons.cloud_upload_outlined,
-                        color: style.inkMutedColor, size: 28),
-                    const SizedBox(height: 8),
-                    Text('DRAG & DROP FILES',
-                        style: TextStyle(
-                            color: style.inkMutedColor,
-                            fontWeight: FontWeight.w600)),
-                  ],
-                ),
-              ),
+
               const SizedBox(height: 12),
-              AppButton(
-                label: 'UPLOAD DOCUMENT',
-                icon: Icons.file_upload_outlined,
-                dense: true,
-                onPressed: () {
-                  ref.read(recentDocumentsProvider.notifier).addDocument(
-                    const RecentDocument('Uploaded_Draft_V1.pdf', 'Processed - just now')
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Document uploaded successfully.'),
-                      backgroundColor: style.accentColor,
-                    ),
-                  );
-                },
-              ),
+
+              if (scanState.status == ScanStatus.success)
+                AppButton(
+                  label: 'SCAN ANOTHER DOCUMENT',
+                  icon: Icons.refresh,
+                  dense: true,
+                  variant: AppButtonVariant.secondary,
+                  onPressed: () => ref.read(riskScanProvider.notifier).reset(),
+                )
+              else
+                AppButton(
+                  label: scanState.status == ScanStatus.loading
+                      ? 'SCANNING...'
+                      : 'UPLOAD DOCUMENT',
+                  icon: Icons.file_upload_outlined,
+                  dense: true,
+                  onPressed: () async {
+                    if (scanState.status == ScanStatus.loading) return;
+
+                    final picked = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['pdf', 'docx', 'txt'],
+                      withData: true, // Required on Flutter Web
+                    );
+
+                    if (picked != null && picked.files.isNotEmpty) {
+                      final file = picked.files.first;
+                      if (file.bytes != null) {
+                        // Add to recent activity immediately
+                        ref
+                            .read(recentDocumentsProvider.notifier)
+                            .addDocument(RecentDocument(file.name, 'Scanning...'));
+                        // Start scan
+                        ref
+                            .read(riskScanProvider.notifier)
+                            .scan(file.name, file.bytes!);
+                      }
+                    }
+                  },
+                ),
             ],
           ),
         ),
+
         const SizedBox(height: 20),
+
+        // ── Trending Legal Risks (live news) ────────────────────────────────
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -151,15 +203,37 @@ class _LightHomeBody extends ConsumerWidget {
                         color: style.inkColor)),
               ],
             ),
-            Text('VIEW ALL',
-                style: TextStyle(fontSize: 11, color: style.inkMutedColor)),
+            GestureDetector(
+              onTap: () => ref.invalidate(legalNewsProvider),
+              child: Text('REFRESH',
+                  style: TextStyle(fontSize: 11, color: style.inkMutedColor)),
+            ),
           ],
         ),
         const SizedBox(height: 12),
-        for (final risk in trendingRisks) ...[
-          _RiskCard(risk: risk),
-          const SizedBox(height: 14),
-        ],
+
+        newsAsync.when(
+          loading: () => const _NewsLoadingCard(),
+          error: (e, _) => _NewsErrorCard(
+            message: e.toString().replaceFirst('Exception: ', ''),
+            onRetry: () => ref.invalidate(legalNewsProvider),
+          ),
+          data: (articles) => articles.isEmpty
+              ? _NewsErrorCard(
+                  message: 'No legal news available right now.',
+                  onRetry: () => ref.invalidate(legalNewsProvider),
+                )
+              : Column(
+                  children: [
+                    for (final article in articles.take(4)) ...[
+                      _NewsRiskCard(article: article, style: style),
+                      const SizedBox(height: 14),
+                    ]
+                  ],
+                ),
+        ),
+
+        // ── LexChat AI ──────────────────────────────────────────────────────
         AppCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +304,10 @@ class _LightHomeBody extends ConsumerWidget {
             ],
           ),
         ),
+
         const SizedBox(height: 20),
+
+        // ── Recent Activity ─────────────────────────────────────────────────
         Text('RECENT ACTIVITY',
             style: TextStyle(
                 fontWeight: FontWeight.w800,
@@ -242,10 +319,19 @@ class _LightHomeBody extends ConsumerWidget {
           child: Column(
             children: [
               for (var i = 0; i < recentDocs.length; i++) ...[
-                _RecentDocTile(name: recentDocs[i].name),
+                _RecentDocTile(doc: recentDocs[i]),
                 if (i != recentDocs.length - 1)
-                  Divider(height: 1, color: style.borderColor.withValues(alpha: 0.3)),
+                  Divider(
+                      height: 1,
+                      color: style.borderColor.withValues(alpha: 0.3)),
               ],
+              if (recentDocs.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text('No recent documents.',
+                      style: TextStyle(
+                          color: style.inkMutedColor, fontSize: 12.5)),
+                ),
             ],
           ),
         ),
@@ -254,16 +340,30 @@ class _LightHomeBody extends ConsumerWidget {
   }
 }
 
-class _RiskCard extends StatelessWidget {
-  const _RiskCard({required this.risk});
-  final TrendingRisk risk;
+// ---------------------------------------------------------------------------
+// Light body: News card (live data)
+// ---------------------------------------------------------------------------
+
+String _badgeForArticle(NewsArticle article) {
+  final text = '${article.title} ${article.description}'.toLowerCase();
+  const highRisk = [
+    'arrest', 'criminal', 'fraud', 'scam', 'penalty', 'fine', 'court order',
+    'violation', 'fir', 'bail', 'corruption', 'illegal', 'sue', 'charged',
+    'convicted', 'raided', 'seized',
+  ];
+  return highRisk.any(text.contains) ? 'HIGH RISK' : 'UPDATE';
+}
+
+class _NewsRiskCard extends StatelessWidget {
+  const _NewsRiskCard({required this.article, required this.style});
+  final NewsArticle article;
+  final AppStyle style;
 
   @override
   Widget build(BuildContext context) {
-    final style = context.appStyle;
-    final badgeColor = risk.badge == 'HIGH RISK'
-        ? AppColors.lightHighRiskBg
-        : AppColors.lightUpdateBg;
+    final badge = _badgeForArticle(article);
+    final badgeColor =
+        badge == 'HIGH RISK' ? AppColors.lightHighRiskBg : AppColors.lightUpdateBg;
 
     return AppCard(
       padding: EdgeInsets.zero,
@@ -273,22 +373,36 @@ class _RiskCard extends StatelessWidget {
           Stack(
             children: [
               Container(
-                height: 90,
+                height: 80,
                 width: double.infinity,
-                decoration: BoxDecoration(color: badgeColor.withValues(alpha: 0.85)),
+                decoration:
+                    BoxDecoration(color: badgeColor.withValues(alpha: 0.85)),
                 child: Icon(
-                  risk.badge == 'HIGH RISK'
-                      ? Icons.gavel
-                      : Icons.description_outlined,
+                  badge == 'HIGH RISK' ? Icons.gavel : Icons.newspaper,
                   color: Colors.white24,
-                  size: 48,
+                  size: 44,
                 ),
               ),
               Positioned(
                 top: 8,
                 left: 8,
-                child: BadgeChip(text: risk.badge, background: badgeColor),
+                child: BadgeChip(text: badge, background: badgeColor),
               ),
+              if (article.sourceName != null)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    color: Colors.black45,
+                    child: Text(
+                      article.sourceName!,
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 9),
+                    ),
+                  ),
+                ),
             ],
           ),
           Padding(
@@ -296,15 +410,25 @@ class _RiskCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(risk.title,
+                Text(article.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: 13.5,
                         color: style.inkColor)),
                 const SizedBox(height: 4),
-                Text(risk.description,
-                    style: TextStyle(
-                        fontSize: 12, color: style.inkMutedColor)),
+                Text(article.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style:
+                        TextStyle(fontSize: 12, color: style.inkMutedColor)),
+                if (article.publishedAt != null) ...[
+                  const SizedBox(height: 6),
+                  Text(article.publishedAt!,
+                      style: TextStyle(
+                          fontSize: 10, color: style.inkMutedColor)),
+                ],
               ],
             ),
           ),
@@ -314,22 +438,56 @@ class _RiskCard extends StatelessWidget {
   }
 }
 
-class _RecentDocTile extends StatelessWidget {
-  const _RecentDocTile({required this.name});
-  final String name;
+class _NewsLoadingCard extends StatelessWidget {
+  const _NewsLoadingCard();
 
   @override
   Widget build(BuildContext context) {
     final style = context.appStyle;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    return AppCard(
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.insert_drive_file_outlined,
-              size: 18, color: style.inkMutedColor),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(name, style: TextStyle(color: style.inkColor)),
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+                strokeWidth: 2, color: style.accentColor),
+          ),
+          const SizedBox(width: 12),
+          Text('FETCHING LIVE LEGAL NEWS...',
+              style: TextStyle(fontSize: 12, color: style.inkMutedColor)),
+        ],
+      ),
+    );
+  }
+}
+
+class _NewsErrorCard extends StatelessWidget {
+  const _NewsErrorCard({required this.message, required this.onRetry});
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.appStyle;
+    return AppCard(
+      child: Column(
+        children: [
+          Icon(Icons.wifi_off, color: style.inkMutedColor, size: 28),
+          const SizedBox(height: 8),
+          Text(message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: style.inkMutedColor)),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: onRetry,
+            child: Text('TAP TO RETRY',
+                style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: style.accentColor,
+                    decoration: TextDecoration.underline)),
           ),
         ],
       ),
@@ -338,7 +496,278 @@ class _RecentDocTile extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// DARK THEME BODY (Image 13)
+// Scan result widgets
+// ---------------------------------------------------------------------------
+
+class _ScanLoadingCard extends StatelessWidget {
+  const _ScanLoadingCard({required this.fileName, required this.style});
+  final String fileName;
+  final AppStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 14),
+      decoration: BoxDecoration(
+        color: style.cardBackgroundAlt,
+        border: Border.all(color: style.borderColor.withValues(alpha: 0.4)),
+      ),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 24,
+            height: 24,
+            child:
+                CircularProgressIndicator(strokeWidth: 2, color: style.accentColor),
+          ),
+          const SizedBox(height: 12),
+          Text('SCANNING: $fileName',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: style.inkColor)),
+          const SizedBox(height: 4),
+          Text('Analyzing clauses via LexCheck AI…',
+              style: TextStyle(fontSize: 11, color: style.inkMutedColor)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScanErrorCard extends StatelessWidget {
+  const _ScanErrorCard({required this.error, required this.style});
+  final String error;
+  final AppStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        border: Border.all(color: Colors.red.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.error_outline, color: Colors.red.shade400, size: 18),
+              const SizedBox(width: 8),
+              Text('SCAN FAILED',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: Colors.red.shade400,
+                      fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(error,
+              style: TextStyle(fontSize: 12, color: Colors.red.shade600)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScanResultCard extends StatelessWidget {
+  const _ScanResultCard({required this.result, required this.style});
+  final ScanResult result;
+  final AppStyle style;
+
+  Color _levelColor() {
+    switch (result.riskLevel) {
+      case RiskLevel.high:
+        return AppColors.lightHighRiskBg;
+      case RiskLevel.low:
+        return Colors.green.shade600;
+      default:
+        return Colors.orange.shade700;
+    }
+  }
+
+  String _levelLabel() {
+    switch (result.riskLevel) {
+      case RiskLevel.high:
+        return 'HIGH RISK';
+      case RiskLevel.low:
+        return 'LOW RISK';
+      default:
+        return 'MEDIUM RISK';
+    }
+  }
+
+  Color _flagColor(RiskSeverity s) {
+    switch (s) {
+      case RiskSeverity.high:
+        return Colors.red.shade400;
+      case RiskSeverity.low:
+        return Colors.green.shade600;
+      default:
+        return Colors.orange.shade700;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final levelColor = _levelColor();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Overall risk badge
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+          color: levelColor.withValues(alpha: 0.12),
+          child: Row(
+            children: [
+              Icon(
+                result.riskLevel == RiskLevel.high
+                    ? Icons.warning_amber_rounded
+                    : result.riskLevel == RiskLevel.low
+                        ? Icons.check_circle_outline
+                        : Icons.info_outline,
+                color: levelColor,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_levelLabel(),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: levelColor,
+                            fontSize: 13)),
+                    Text(result.fileName,
+                        style: TextStyle(
+                            fontSize: 10, color: style.inkMutedColor)),
+                  ],
+                ),
+              ),
+              Text(
+                  '${(result.confidence * 100).toStringAsFixed(0)}% conf.',
+                  style: TextStyle(fontSize: 10, color: style.inkMutedColor)),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // Summary
+        Text(result.summary,
+            style: TextStyle(fontSize: 12.5, color: style.inkMutedColor)),
+
+        // Flags
+        if (result.flags.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text('FLAGGED CLAUSES (${result.flags.length})',
+              style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 11,
+                  color: style.inkColor)),
+          const SizedBox(height: 8),
+          for (final flag in result.flags) ...[
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: _flagColor(flag.severity), width: 3),
+                ),
+                color: style.cardBackgroundAlt,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        color: _flagColor(flag.severity),
+                        child: Text(
+                          flag.severity.name.toUpperCase(),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 5),
+                  Text('"${flag.clause}"',
+                      style: TextStyle(
+                          fontSize: 11.5,
+                          fontStyle: FontStyle.italic,
+                          color: style.inkColor)),
+                  const SizedBox(height: 4),
+                  Text(flag.reason,
+                      style: TextStyle(
+                          fontSize: 11.5, color: style.inkMutedColor)),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Shared: Recent doc tile
+// ---------------------------------------------------------------------------
+
+class _RecentDocTile extends StatelessWidget {
+  const _RecentDocTile({required this.doc});
+  final RecentDocument doc;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.appStyle;
+
+    Color statusColor = style.inkMutedColor;
+    if (doc.status.contains('HIGH') || doc.status.contains('FLAGGED')) {
+      statusColor = AppColors.lightHighRiskBg;
+    } else if (doc.status.contains('CLEAN') || doc.status.contains('LOW')) {
+      statusColor = Colors.green.shade600;
+    } else if (doc.status.contains('Scanning') ||
+        doc.status.contains('SCANNING')) {
+      statusColor = Colors.orange.shade700;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.insert_drive_file_outlined,
+              size: 18, color: style.inkMutedColor),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(doc.name,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: style.inkColor)),
+          ),
+          const SizedBox(width: 8),
+          Text(doc.status,
+              style: TextStyle(fontSize: 10, color: statusColor)),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// DARK THEME BODY
 // ---------------------------------------------------------------------------
 class _DarkHomeBody extends ConsumerWidget {
   const _DarkHomeBody();
@@ -456,16 +885,19 @@ class _DarkHomeBody extends ConsumerWidget {
                 label: 'UPLOAD MANUALLY',
                 icon: Icons.file_upload_outlined,
                 dense: true,
-                onPressed: () {
-                  ref.read(recentDocumentsProvider.notifier).addDocument(
-                    const RecentDocument('New_Contract_Final.docx', 'SCANNING...')
+                onPressed: () async {
+                  final picked = await FilePicker.platform.pickFiles(
+                    type: FileType.custom,
+                    allowedExtensions: ['pdf', 'docx', 'txt'],
+                    withData: true,
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Scan initialized...'),
-                      backgroundColor: style.accentColor,
-                    ),
-                  );
+                  if (picked != null && picked.files.isNotEmpty) {
+                    final file = picked.files.first;
+                    if (file.bytes != null) {
+                      ref.read(recentDocumentsProvider.notifier).addDocument(
+                          RecentDocument(file.name, 'SCANNING...'));
+                    }
+                  }
                 },
               ),
             ],
@@ -498,7 +930,8 @@ class _DarkHomeBody extends ConsumerWidget {
                 'ANALYSIS COMPLETE. I found 3 high-risk clauses in '
                 "'Service_Agreement_V4.pdf'. Would you like me to suggest "
                 'remediation text?',
-                style: TextStyle(fontSize: 12.5, color: style.inkMutedColor),
+                style:
+                    TextStyle(fontSize: 12.5, color: style.inkMutedColor),
               ),
             ],
           ),
@@ -645,7 +1078,8 @@ class _DarkAlertCard extends StatelessWidget {
                       top: Radius.circular(style.cardRadius)),
                 ),
                 child: Icon(Icons.shield_outlined,
-                    color: style.inkMutedColor.withValues(alpha: 0.4), size: 44),
+                    color: style.inkMutedColor.withValues(alpha: 0.4),
+                    size: 44),
               ),
               Positioned(
                 top: 8,
@@ -666,8 +1100,8 @@ class _DarkAlertCard extends StatelessWidget {
                         color: style.inkColor)),
                 const SizedBox(height: 4),
                 Text(risk.description,
-                    style:
-                        TextStyle(fontSize: 11.5, color: style.inkMutedColor)),
+                    style: TextStyle(
+                        fontSize: 11.5, color: style.inkMutedColor)),
               ],
             ),
           ),
