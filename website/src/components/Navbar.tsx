@@ -1,7 +1,4 @@
-import React from 'react';
-import { Apple, Play } from 'lucide-react';
-
-const Navbar: React.FC = () => {
+const Navbar:  = () => {
   return (
     <nav className="navbar">
       <div className="logo">LexCheck</div>
