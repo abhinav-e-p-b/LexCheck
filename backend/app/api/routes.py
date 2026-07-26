@@ -132,7 +132,7 @@ async def scan_document(file: UploadFile = File(...)):
         logger.error(f"LLM error during scan: {e}")
         raise HTTPException(
             status_code=503,
-            detail="LLM service unavailable. Make sure Ollama is running.",
+            detail="LLM service unavailable. Check your Groq API key and network connection.",
         )
 
     # --- Parse response ---
