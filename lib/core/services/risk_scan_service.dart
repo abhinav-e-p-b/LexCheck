@@ -10,7 +10,8 @@ import '../data/news_models.dart';
 /// The backend already has CORS configured with allow_origins=["*"] so no
 /// additional setup is needed.
 class RiskScanService {
-  // Flutter Web in browser → backend on same machine is simply localhost.
+  // For production (Hugging Face Spaces), change this to your space URL:
+  // static const _baseUrl = 'https://YOUR_SPACE_NAME.hf.space';
   static const _baseUrl = 'http://localhost:8000';
 
   static final RiskScanService _instance = RiskScanService._internal();
