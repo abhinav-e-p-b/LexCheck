@@ -73,7 +73,14 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
       }
 
       ref.read(chatThreadProvider.notifier).addMessage(
-            ChatMessage(fromBot: true, text: response.answer + sourceSummary),
+            ChatMessage(
+              fromBot: true, 
+              text: response.explanation + sourceSummary,
+              severity: response.severity,
+              verdict: response.verdict,
+              lawsCited: response.lawsCited,
+              caseLens: response.caseLens,
+            ),
           );
     } catch (e) {
       ref.read(chatThreadProvider.notifier).addMessage(
@@ -84,7 +91,7 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
                   'Make sure:\n'
                   '1. The Python backend is running (uvicorn app.main:app --port 8000)\n'
                   '2. Datasets have been ingested (python -m app.ingest)\n'
-                  '3. Ollama is running with a model loaded',
+                  '3. Groq API Key is set in config.py',
             ),
           );
     } finally {
@@ -98,6 +105,28 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
     final style = context.appStyle;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final messages = ref.watch(chatThreadProvider);
+    final lastBotMsg = messages.reversed.firstWhere(
+      (m) => m.fromBot,
+      orElse: () => const ChatMessage(fromBot: true, text: ''),
+    );
+
+    double gaugePercent = 0;
+    String verdictTitle = isDark ? 'GREY_AREA_VERDICT' : 'GREY AREA VERDICT';
+    String severityLabel = 'CAUTION';
+    Color needleColor = style.inkColor;
+    
+    if (lastBotMsg.severity != null) {
+      final s = lastBotMsg.severity!.toLowerCase();
+      if (s == 'safe') { gaugePercent = 15; severityLabel = 'SAFE'; needleColor = Colors.green; }
+      else if (s == 'minor') { gaugePercent = 35; severityLabel = 'MINOR RISK'; needleColor = Colors.yellow; }
+      else if (s == 'caution') { gaugePercent = 50; severityLabel = 'CAUTION'; needleColor = Colors.orange; }
+      else if (s == 'serious') { gaugePercent = 80; severityLabel = 'SERIOUS RISK'; needleColor = Colors.red; }
+      else if (s == 'criminal') { gaugePercent = 95; severityLabel = 'CRIMINAL'; needleColor = AppColors.darkCritical; }
+      else if (s == 'out of scope') { gaugePercent = 0; severityLabel = 'OUT OF SCOPE'; needleColor = Colors.grey; }
+      verdictTitle = isDark ? severityLabel.replaceAll(' ', '_') : severityLabel;
+    } else {
+      gaugePercent = 50;
+    }
 
     return Scaffold(
       appBar: const AppTopBar(),
@@ -115,7 +144,7 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
                       child: Column(
                         children: [
                           Text(
-                            isDark ? 'GREY_AREA_VERDICT' : 'GREY AREA VERDICT',
+                            verdictTitle,
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
                               letterSpacing: 1,
@@ -124,9 +153,9 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
                           ),
                           const SizedBox(height: 12),
                           SemiDialGauge(
-                            percent: 74,
+                            percent: gaugePercent,
                             zoned: isDark,
-                            needleColor: style.inkColor,
+                            needleColor: needleColor,
                             arcColor: style.inkColor,
                             lowColor: AppColors.darkGaugeLow,
                             midColor: AppColors.darkGaugeMid,
@@ -150,98 +179,41 @@ class _LexChatScreenState extends ConsumerState<LexChatScreen> {
                             ),
                           ],
                           const SizedBox(height: 14),
-                          if (isDark) ...[
-                            const BadgeChip(
-                              text: 'CRITICAL_EXCEPTION_FOUND',
-                              background: AppColors.darkCritical,
-                            ),
-                            const SizedBox(height: 12),
-                            RichText(
-                              textAlign: TextAlign.left,
-                              text: TextSpan(
-                                style: TextStyle(
-                                    fontSize: 13, color: style.inkColor, height: 1.5),
-                                children: [
-                                  const TextSpan(
-                                      text: 'The current legal query explores '),
-                                  TextSpan(
-                                    text: 'non-standard jurisdictional bypasses',
-                                    style: TextStyle(color: style.accentColor),
-                                  ),
-                                  const TextSpan(
-                                      text: '. Initial telemetry suggests a '),
-                                  TextSpan(
-                                    text: '87.4% alignment',
-                                    style: TextStyle(
-                                        color: style.accentColor,
-                                        fontWeight: FontWeight.w700),
-                                  ),
-                                  const TextSpan(
-                                    text:
-                                        ' with Section 12-B High-Risk patterns. '
-                                        'Proceed with automated synthesis at '
-                                        'your own discretion.',
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Wrap(
-                              spacing: 8,
-                              children: [
-                                _HashTag('#RISK_MOD_4'),
-                                _HashTag('#PROTOCOL_0_9'),
-                                _HashTag('#LEGAL_GREY'),
-                              ],
-                            ),
+                          if (lastBotMsg.severity != null) ...[
+                             if (isDark)
+                               BadgeChip(
+                                 text: verdictTitle,
+                                 background: needleColor,
+                               ),
+                             const SizedBox(height: 12),
+                             Text(
+                               lastBotMsg.verdict ?? '',
+                               textAlign: TextAlign.center,
+                               style: TextStyle(
+                                   fontSize: 13, color: style.inkColor, height: 1.5, fontWeight: FontWeight.w700),
+                             ),
+                             if (lastBotMsg.caseLens != null && lastBotMsg.caseLens!.isNotEmpty) ...[
+                               const SizedBox(height: 12),
+                               Text(
+                                 'CaseLens: ' + lastBotMsg.caseLens!,
+                                 textAlign: TextAlign.center,
+                                 style: TextStyle(
+                                     fontSize: 12, color: style.inkMutedColor, fontStyle: FontStyle.italic),
+                               ),
+                             ],
+                             const SizedBox(height: 12),
+                             if (lastBotMsg.lawsCited != null && lastBotMsg.lawsCited!.isNotEmpty)
+                               Wrap(
+                                 spacing: 8,
+                                 children: lastBotMsg.lawsCited!.map((l) => _HashTag('#' + l.replaceAll(' ', '_'))).toList(),
+                               ),
                           ] else ...[
-                            Text(
-                              'The current clause demonstrates high risk (74%) '
-                              'regarding intellectual property transfer. '
-                              'Suggesting immediate renegotiation.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 12.5, color: style.inkMutedColor),
-                            ),
-                            const SizedBox(height: 14),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    decoration: const BoxDecoration(
-                                        color: AppColors.lightHighRiskBg),
-                                    child: const Center(
-                                      child: Text('HIGH RISK',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 12)),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 10),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: style.borderColor,
-                                          width: style.borderWidth),
-                                    ),
-                                    child: Center(
-                                      child: Text('IP RIGHTS',
-                                          style: TextStyle(
-                                              color: style.inkColor,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 12)),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                             Text(
+                               'Ask a legal query below to receive an instant verdict and risk analysis.',
+                               textAlign: TextAlign.center,
+                               style: TextStyle(
+                                   fontSize: 12.5, color: style.inkMutedColor),
+                             ),
                           ],
                         ],
                       ),

@@ -28,13 +28,21 @@ class RagSource {
 
 /// Model for the full RAG API response.
 class RagResponse {
-  final String answer;
+  final String severity;
+  final String verdict;
+  final String explanation;
+  final List<String> lawsCited;
+  final String caseLens;
   final List<RagSource> sources;
   final double confidence;
   final double processingTime;
 
   const RagResponse({
-    required this.answer,
+    required this.severity,
+    required this.verdict,
+    required this.explanation,
+    required this.lawsCited,
+    required this.caseLens,
     required this.sources,
     required this.confidence,
     required this.processingTime,
@@ -46,7 +54,13 @@ class RagResponse {
         .toList();
 
     return RagResponse(
-      answer: json['answer'] ?? '',
+      severity: json['severity'] ?? 'Caution',
+      verdict: json['verdict'] ?? '',
+      explanation: json['explanation'] ?? '',
+      lawsCited: (json['laws_cited'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      caseLens: json['case_lens'] ?? '',
       sources: sourcesList,
       confidence: (json['confidence'] as num?)?.toDouble() ?? 0.0,
       processingTime: (json['processing_time'] as num?)?.toDouble() ?? 0.0,

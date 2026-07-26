@@ -6,6 +6,7 @@ import '../../core/data/models.dart';
 import '../../core/data/news_models.dart';
 import '../../core/providers/home_providers.dart';
 import '../../core/providers/mock_providers.dart';
+import '../../core/providers/shell_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_style.dart';
 import '../../core/widgets/app_button.dart';
@@ -28,7 +29,7 @@ class HomeScreen extends ConsumerWidget {
           : FloatingActionButton(
               backgroundColor: context.appStyle.accentColor,
               foregroundColor: context.appStyle.inkColor,
-              onPressed: () {},
+              onPressed: () => ref.read(shellIndexProvider.notifier).state = 1,
               child: const Icon(Icons.add),
             ),
       body: SafeArea(
@@ -299,7 +300,7 @@ class _LightHomeBody extends ConsumerWidget {
                 icon: Icons.arrow_forward,
                 variant: AppButtonVariant.dark,
                 dense: true,
-                onPressed: () {},
+                onPressed: () => ref.read(shellIndexProvider.notifier).state = 1,
               ),
             ],
           ),

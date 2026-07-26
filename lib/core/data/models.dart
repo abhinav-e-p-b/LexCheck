@@ -31,14 +31,36 @@ class TrendingRisk {
 }
 
 class ChatMessage {
-  const ChatMessage({required this.fromBot, required this.text});
+  const ChatMessage({
+    required this.fromBot,
+    required this.text,
+    this.severity,
+    this.verdict,
+    this.lawsCited,
+    this.caseLens,
+  });
   final bool fromBot;
   final String text;
+  final String? severity;
+  final String? verdict;
+  final List<String>? lawsCited;
+  final String? caseLens;
 
-  ChatMessage copyWith({bool? fromBot, String? text}) {
+  ChatMessage copyWith({
+    bool? fromBot,
+    String? text,
+    String? severity,
+    String? verdict,
+    List<String>? lawsCited,
+    String? caseLens,
+  }) {
     return ChatMessage(
       fromBot: fromBot ?? this.fromBot,
       text: text ?? this.text,
+      severity: severity ?? this.severity,
+      verdict: verdict ?? this.verdict,
+      lawsCited: lawsCited ?? this.lawsCited,
+      caseLens: caseLens ?? this.caseLens,
     );
   }
 }
