@@ -70,9 +70,8 @@ class RagResponse {
 
 /// Service that communicates with the FastAPI RAG backend.
 class LexApiService {
-  // Use 10.0.2.2 for Android emulator pointing to host machine localhost.
-  // Use your machine's local IP (e.g. 192.168.x.x) for physical devices.
-  static const String _baseUrl = 'http://10.0.2.2:8000';
+  // Cloud backend on Railway
+  static const String _baseUrl = 'https://lexcheck-production-7a25.up.railway.app';
 
   static final LexApiService _instance = LexApiService._internal();
   factory LexApiService() => _instance;

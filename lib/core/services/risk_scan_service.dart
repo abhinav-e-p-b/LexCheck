@@ -10,8 +10,8 @@ import '../data/news_models.dart';
 /// The backend already has CORS configured with allow_origins=["*"] so no
 /// additional setup is needed.
 class RiskScanService {
-  // Flutter Web in browser → backend on same machine is simply localhost.
-  static const _baseUrl = 'http://localhost:8000';
+  // Cloud backend on Railway
+  static const _baseUrl = 'https://lexcheck-production-7a25.up.railway.app';
 
   static final RiskScanService _instance = RiskScanService._internal();
   factory RiskScanService() => _instance;
