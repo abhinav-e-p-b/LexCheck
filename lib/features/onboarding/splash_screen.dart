@@ -78,15 +78,24 @@ class _SplashScreenState extends State<SplashScreen>
   Widget _buildHeader() {
     return Column(
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(8),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            'assets/images/app_logo.png',
+            width: 60,
+            height: 60,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.verified_user_outlined,
+                  color: Color(0xFFFFC107), size: 22),
+            ),
           ),
-          child: const Icon(Icons.verified_user_outlined,
-              color: Color(0xFFFFC107), size: 22),
         ),
         const SizedBox(height: 18),
         const Padding(
