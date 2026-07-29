@@ -41,9 +41,9 @@ const HeroSection: React.FC = () => {
             <video
               controls
               preload="metadata"
-              poster="src/assets/demo-thumbnail.png"
+              poster="/demo-thumbnail.png"
             >
-              <source src="src/assets/demo.mp4" type="video/mp4" />
+              <source src="/demo.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
 
