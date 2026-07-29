@@ -299,7 +299,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: const Text(
             'I N I T I A T E   S Y S T E M',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w700,
               letterSpacing: 3,
               color: Colors.white,
